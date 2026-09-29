@@ -69,3 +69,7 @@ Open `test-form.html#selftest` in a browser for the in-page field detection and 
 | `popup.*` | Fill button, questions, session status |
 | `tracker.*` | Applications list and CSV export |
 | `vendor/` | pdf.js (Apache-2.0) |
+
+## License
+
+MIT, see [LICENSE](LICENSE). Bundled pdf.js is Apache-2.0 (`vendor/pdfjs-LICENSE`).
