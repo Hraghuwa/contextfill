@@ -1,0 +1,65 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>ContextFill profile</title>
+<style>
+  body { font: 14px system-ui, sans-serif; max-width: 640px; margin: 24px auto; padding: 0 16px; }
+  label { display: block; margin: 12px 0 4px; font-weight: 600; }
+  input, textarea, select { width: 100%; box-sizing: border-box; font: inherit; padding: 6px; }
+  [data-provider][hidden] { display: none; }
+  textarea { min-height: 80px; }
+  button { padding: 8px 16px; font: inherit; cursor: pointer; }
+  .hint { color: #666; font-weight: normal; font-size: 12px; }
+  #status { margin-left: 8px; }
+  section { border-top: 1px solid #ddd; margin-top: 24px; padding-top: 8px; }
+  fieldset.entry { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 0 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 6px; }
+  fieldset.entry label { font-weight: normal; font-size: 12px; color: #444; }
+  fieldset.entry button { justify-self: start; align-self: end; margin: 8px 0; }
+</style>
+<h1>ContextFill</h1>
+
+<section>
+  <h2>AI provider</h2>
+  <label for="provider">Provider</label>
+  <select id="provider"></select>
+  <div data-provider="groq">
+    <label for="groqKey">Groq API key <span class="hint">free at <a href="https://console.groq.com/keys" target="_blank">console.groq.com/keys</a></span></label>
+    <input id="groqKey" type="password" autocomplete="off">
+    <label for="groqModel">Model <span class="hint">leave blank for the default</span></label>
+    <input id="groqModel" placeholder="openai/gpt-oss-120b">
+  </div>
+  <div data-provider="claude">
+    <label for="claudeKey">Anthropic API key <span class="hint">from <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a> (paid)</span></label>
+    <input id="claudeKey" type="password" autocomplete="off">
+    <label for="claudeModel">Model <span class="hint">leave blank for the default; claude-sonnet-5 is cheaper</span></label>
+    <input id="claudeModel" placeholder="claude-opus-5">
+  </div>
+  <div data-provider="ollama">
+    <label for="ollamaUrl">Ollama address</label>
+    <input id="ollamaUrl" placeholder="http://localhost:11434">
+    <label for="ollamaModel">Model <span class="hint">installed on this computer</span></label>
+    <select id="ollamaModel"></select>
+    <p><button type="button" id="ollamaRefresh">Refresh list</button> <span id="ollamaStatus" class="hint" role="status"></span></p>
+  </div>
+  <p class="hint">Keys are stored only in this browser. Your resume text and form contents go to the provider you pick; with Ollama nothing leaves this computer.</p>
+</section>
+
+<section>
+  <h2>1. Upload resume</h2>
+  <input id="resume" type="file" accept=".pdf,.txt,.md" aria-label="Resume file">
+  <p id="resumeStatus" role="status"></p>
+  <p id="resumeFile" class="hint"></p>
+  <p class="hint">PDF or text. The text is read locally, then the AI fills in the profile below. Check everything before you save.</p>
+</section>
+
+<section>
+  <h2>2. Confirm your information</h2>
+  <form id="profile"></form>
+  <div id="lists"></div>
+  <label for="answers">Saved answers <span class="hint">JSON, grows as you answer questions in the popup</span></label>
+  <textarea id="answers" spellcheck="false"></textarea>
+</section>
+
+<p><button id="save">Save profile</button><span id="status" role="status"></span></p>
+<p><a href="tracker.html">Applications tracker</a></p>
+<script src="llm.js"></script>
+<script src="options.js"></script>

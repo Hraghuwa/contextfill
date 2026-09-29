@@ -1,0 +1,24 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>ContextFill applications</title>
+<style>
+  body { font: 14px system-ui, sans-serif; max-width: 960px; margin: 24px auto; padding: 0 16px; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { text-align: left; padding: 6px 8px; border-bottom: 1px solid #e5e5e5; vertical-align: top; }
+  th { font-size: 12px; color: #555; }
+  td a { word-break: break-all; }
+  .bar { display: flex; gap: 12px; align-items: center; margin: 12px 0; }
+  #empty { color: #666; }
+  button { font: inherit; cursor: pointer; }
+</style>
+<h1>Applications</h1>
+<div class="bar">
+  <button id="export">Export CSV</button>
+  <span id="count"></span>
+</div>
+<p id="empty" hidden>No applications yet. Fill a form with ContextFill and it shows up here.</p>
+<table>
+  <thead><tr><th>Date</th><th>Company</th><th>Role</th><th>Status</th><th>Link</th><th></th></tr></thead>
+  <tbody id="rows"></tbody>
+</table>
+<script src="tracker.js"></script>

@@ -1,0 +1,22 @@
+<!doctype html>
+<meta charset="utf-8">
+<style>
+  body { width: 340px; font: 13px system-ui, sans-serif; margin: 12px; }
+  button { width: 100%; padding: 8px; font: inherit; cursor: pointer; }
+  #status { margin: 10px 0; color: #444; }
+  #status.error { color: #b91c1c; }
+  .ask { margin: 10px 0; }
+  .ask label { display: block; font-weight: 600; margin-bottom: 4px; }
+  .ask textarea, .ask select { width: 100%; box-sizing: border-box; font: inherit; }
+  a { color: #555; font-size: 12px; }
+  #session { font-size: 12px; background: #eff6ff; padding: 6px 8px; border-radius: 6px; }
+  .hint { color: #666; font-size: 12px; }
+</style>
+<button id="fill">Fill this page</button>
+<div id="status" role="status"></div>
+<p id="session" hidden>Filling each new page of this application. <a href="#" id="stop">Stop</a></p>
+<div id="asks"></div>
+<button id="apply" hidden>Apply my answers</button>
+<p class="hint">Shortcut: <kbd id="keys">⌥⇧F</kbd></p>
+<p><a href="options.html" target="_blank">Edit profile</a> · <a id="tracker" href="tracker.html" target="_blank">Applications</a></p>
+<script src="popup.js"></script>

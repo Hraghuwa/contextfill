@@ -1,0 +1,118 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>ContextFill test form</title>
+<!-- Open as-is to try the extension. Open with #selftest to run the scan/fill checks. -->
+<h1>Software Engineer, Acme</h1>
+<p>We build payments infrastructure. Tell us why you'd like to join.</p>
+<form onsubmit="alert('submitted'); return false">
+  <label for="fn">First name</label> <input id="fn" name="first_name" required><br>
+  <input type="email" name="email" placeholder="Email address"><br>
+  <label>Country <select name="country"><option value="">Select…</option><option value="in">India</option><option value="us">United States</option></select></label><br>
+  <fieldset><legend>Will you require visa sponsorship?</legend>
+    <label><input type="radio" name="visa" value="y"> Yes</label>
+    <label><input type="radio" name="visa" value="n"> No</label>
+  </fieldset>
+  <label><input type="checkbox" name="relocate"> Willing to relocate</label><br>
+  <label for="why">Why Acme?</label><br><textarea id="why"></textarea><br>
+  <label for="li">LinkedIn profile</label> <input id="li" type="url" name="linkedin"><br>
+  <label for="cem">College email</label> <input id="cem" type="email"><br>
+  <label for="join">How soon can you join?</label> <input id="join"><br>
+  <label for="col">Name of your college</label> <input id="col"><br>
+  <label for="x10">10th percentage</label> <input id="x10"><br>
+  <label for="prev">Previous company</label> <input id="prev"><br>
+  <label for="ug">Graduation college</label> <input id="ug"><br>
+  <!-- Custom dropdowns, the way React-Select / Workday build them -->
+  <label id="loclab" for="loc">Current location</label>
+  <div><input id="loc" role="combobox" aria-autocomplete="list" aria-controls="loclist" aria-expanded="false"><ul id="loclist" role="listbox" hidden></ul></div>
+  <span id="deglab">Highest degree</span> <button type="button" id="deg" aria-haspopup="listbox" aria-labelledby="deglab" aria-controls="deglist">Select one</button>
+  <ul id="deglist" role="listbox" hidden></ul><br>
+  <span id="shiftlab">Preferred shift</span> <button type="button" id="shift" aria-haspopup="listbox" aria-labelledby="shiftlab">Select one</button>
+  <ul id="shiftlist" role="listbox" hidden></ul><br>
+  <input type="hidden" name="csrf" value="x">
+  <input type="file" name="cv" style="display:none"> <!-- hidden behind a styled button, as many sites do -->
+  <label>Cover letter <input type="file" name="cover"></label>
+  <div id="step2"></div>
+  <button type="button" id="nextstep">Next step</button> <a id="next3" href="test-step3.html">Continue to step 3</a>
+  <button>Submit</button>
+</form>
+<script>
+  // Workday-style step: new fields appear without a page load.
+  nextstep.onclick = () => { step2.innerHTML = `
+    <label for="yoe">Years of experience</label> <input id="yoe"><br>
+    <label for="sal">Expected salary</label> <input id="sal"><br>`; };
+</script>
+<pre id="out"></pre>
+<script>
+  const option = (text, onpick) => {
+    const li = document.createElement('li');
+    li.setAttribute('role', 'option');
+    li.textContent = text;
+    li.onclick = () => onpick(text);
+    return li;
+  };
+  // Options exist only after opening, like real widgets.
+  const listbox = (btn, list, opts) => btn.onclick = () => {
+    list.replaceChildren(...opts.map(o => option(o, v => { btn.textContent = v; btn.dataset.value = v; list.hidden = true; })));
+    list.hidden = false;
+  };
+  listbox(deg, deglist, ['BTech', 'BA', 'MBA', 'MBA (Executive)']);
+  listbox(shift, shiftlist, ['Day', 'Night']);
+  // Typeahead with a delayed, filtered "search".
+  const cities = ['Bengaluru', 'Bengaluru Rural', 'Mumbai', 'New Delhi'];
+  loc.oninput = () => setTimeout(() => {
+    loclist.replaceChildren(...cities.filter(c => c.toLowerCase().includes(loc.value.toLowerCase()))
+      .map(c => option(c, v => { loc.value = v; loc.dataset.value = v; loclist.hidden = true; })));
+    loclist.hidden = false;
+  }, 250);
+</script>
+<script src="content.js"></script>
+<script>
+if (location.hash === '#selftest') (async () => {
+  const assert = (ok, msg) => { if (!ok) throw new Error(msg); };
+  const { fields, page } = window.__cf.scan();
+  const by = l => fields.find(f => f.label === l);
+  assert(fields.length === 18, `expected 18 fields, got ${fields.length}`);
+  assert(by('Current location').type === 'combobox' && by('Highest degree').type === 'combobox', 'custom dropdowns detected');
+  assert(by('Highest degree').current === 'Select one', 'button text as current value');
+  const cv = fields.find(f => f.type === 'file' && f.hint.startsWith('cv'));
+  assert(cv, 'hidden file input still found');
+  assert(by('Cover letter').type === 'file', 'cover letter file input found');
+  assert(by('First name').required, 'label[for] + required');
+  assert(by('Email address').type === 'email', 'placeholder label');
+  assert(by('LinkedIn profile').hint === 'linkedin li', 'hint from name/id');
+  assert(by('Country').options.join() === 'Select…,India,United States', 'select options');
+  assert(by('Will you require visa sponsorship?').options.join() === 'Yes,No', 'radio group via legend');
+  assert(page.title === 'ContextFill test form' && page.text.includes('payments'), 'page context');
+
+  let submitted = false;
+  document.forms[0].onsubmit = () => { submitted = true; return false; };
+  let events = 0;
+  document.querySelector('#fn').addEventListener('input', () => events++);
+  const { filled: n, failed } = await window.__cf.fill([
+    { id: by('First name').id, action: 'fill', value: 'Asha' },
+    { id: by('Country').id, action: 'fill', value: 'india' },
+    { id: by('Will you require visa sponsorship?').id, action: 'fill', value: 'No' },
+    { id: by('Willing to relocate').id, action: 'fill', value: 'true' },
+    { id: by('Why Acme?').id, action: 'ask', value: '' },
+    { id: by('Current location').id, action: 'fill', value: 'Bengaluru' },
+    { id: by('Highest degree').id, action: 'fill', value: 'MBA' },
+    { id: by('Preferred shift').id, action: 'fill', value: 'Evening' },
+    { id: cv.id, action: 'fill', value: { name: 'resume.pdf', type: 'application/pdf', data: btoa('%PDF-1.4 fake') } },
+  ]);
+  const f = document.forms[0];
+  assert(n === 7, `filled count ${n}`);
+  assert(failed.length === 1 && failed[0] === by('Preferred shift').id, 'no matching option -> reported, not guessed');
+  assert(loc.dataset.value === 'Bengaluru', `typeahead picked exact match, got ${loc.dataset.value}`);
+  assert(deg.dataset.value === 'MBA', `listbox picked exact match over prefix, got ${deg.dataset.value}`);
+  assert(!shift.dataset.value, 'nothing picked when no option matches');
+  const file = document.forms[0].cv.files[0];
+  assert(file && file.name === 'resume.pdf' && file.size === 13, 'resume attached to file input');
+  assert(f.first_name.value === 'Asha' && events === 1, 'text + input event');
+  assert(f.country.value === 'in', 'select by option text');
+  assert(f.visa.value === 'n', 'radio');
+  assert(f.relocate.checked, 'checkbox');
+  assert(document.querySelector('#why').style.outline.includes('solid'), 'ask field marked');
+  assert(!submitted, 'never submits');
+  document.querySelector('#out').textContent = 'PASS';
+})().catch(e => { document.querySelector('#out').textContent = 'FAIL: ' + e.message; });
+</script>
