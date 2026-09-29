@@ -44,6 +44,15 @@ const LIST_FIELDS = {
   },
 };
 
+// A truncated or malformed reply should say so, not surface as "Unexpected end of JSON input".
+function parseModelJson(text, name) {
+  try {
+    return JSON.parse(text);
+  } catch {
+    throw new Error(`${name} returned an incomplete answer. Try again, or pick a larger model.`);
+  }
+}
+
 async function callLLM(cfg, system, user, schema) {
   const call = { groq: callGroq, claude: callClaude, ollama: callOllama }[cfg.provider];
   return call(cfg, system, user, schema);
@@ -67,7 +76,7 @@ async function callGroq({ key, model }, system, user, schema) {
   }), 'Groq');
   const choice = json.choices[0];
   if (choice.finish_reason === 'length') throw new Error('Response was cut off (form too large).');
-  return JSON.parse(choice.message.content);
+  return parseModelJson(choice.message.content, 'Groq');
 }
 
 async function callClaude({ key, model }, system, user, schema) {
@@ -93,7 +102,7 @@ async function callClaude({ key, model }, system, user, schema) {
   }), 'Claude');
   if (json.stop_reason === 'refusal') throw new Error('Claude declined this request.');
   if (json.stop_reason === 'max_tokens') throw new Error('Response was cut off (form too large).');
-  return JSON.parse(json.content.find(b => b.type === 'text').text);
+  return parseModelJson(json.content.find(b => b.type === 'text').text, 'Claude');
 }
 
 async function callOllama({ url, model }, system, user, schema) {
@@ -103,7 +112,8 @@ async function callOllama({ url, model }, system, user, schema) {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
       body: JSON.stringify({
-        model, stream: false, format: schema, options: { temperature: 0 },
+        // Ollama's default context window is a few thousand tokens; a form + profile + resume is bigger.
+        model, stream: false, format: schema, options: { temperature: 0, num_ctx: 16384 },
         messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
       }),
     });
@@ -114,7 +124,8 @@ async function callOllama({ url, model }, system, user, schema) {
     throw new Error('Ollama refused the extension. Set OLLAMA_ORIGINS to allow chrome-extension://* and safari-web-extension://*, then restart Ollama.');
   }
   const json = await readJson(res, 'Ollama');
-  return JSON.parse(json.message.content);
+  if (json.done_reason === 'length') throw new Error('Ollama: response was cut off (form too large for this model).');
+  return parseModelJson(json.message.content, 'Ollama');
 }
 
 // Installed models, for the settings dropdown.
@@ -228,6 +239,7 @@ For every field return one item with an action:
 - "skip": the field is not about the user (search boxes, coupon codes, newsletter opt-ins), or it already holds a correct value.
 source is where the value comes from: the one profile key whose meaning matches the question, "savedAnswer", "resume" (open-ended questions answered from the resume), or "none".
 Education and experience are lists, most recent first. Match form wording to entries: 10th / Class X / SSC / matriculation -> level 10th; 12th / Class XII / HSC / intermediate -> level 12th; graduation / UG / bachelor's -> the UG entry; post-graduation / PG / master's / MBA -> the PG entry. Marks, percentage, CGPA, grade -> score; passing year -> endYear; board -> board.
+"Your college" / "current college" / "institute" (no level named) is the education entry with status Pursuing, else the most recent one. "Highest degree / qualification" is the most recent entry, including one still Pursuing, unless the form asks for a completed degree.
 "Current company" is the entry with end "Present"; "previous company" / "last employer" is the most recent entry that has ended. Numbered blocks (Employer 1, Employer 2) follow list order.
 If the form asks for a number (percentage, CGPA) and the entry has "78.0%", fill "78.0" only when the field clearly expects a bare number.
 Never invent facts: no made-up dates, numbers, employers, degrees or links. Never answer with unrelated text:
