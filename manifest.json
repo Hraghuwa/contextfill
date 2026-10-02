@@ -10,7 +10,11 @@
     "declarativeNetRequestWithHostAccess"
   ],
   "host_permissions": [
-    "<all_urls>"
+    "https://api.groq.com/*",
+    "https://api.anthropic.com/*",
+    "http://localhost/*",
+    "http://127.0.0.1/*",
+    "http://[::1]/*"
   ],
   "action": {
     "default_popup": "popup.html",

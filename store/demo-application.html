@@ -1,0 +1,38 @@
+<!doctype html>
+<meta charset="utf-8">
+<title>Senior Product Manager · Northwind Labs</title>
+<!-- Demo job application used only for store screenshots. Not part of the extension package. -->
+<style>
+  body { margin: 0; font: 15px/1.45 system-ui, -apple-system, sans-serif; background: #f5f6f8; color: #1f2328; }
+  header { background: #0f172a; color: #fff; padding: 18px 40px; font-weight: 600; letter-spacing: .2px; }
+  main { max-width: 760px; margin: 28px 40px; background: #fff; border-radius: 12px; padding: 28px 32px; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .meta { color: #57606a; margin-bottom: 20px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+  label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 4px; }
+  input, select, textarea { width: 100%; box-sizing: border-box; font: inherit; padding: 8px 10px; border: 1px solid #d0d7de; border-radius: 6px; background: #fff; }
+  textarea { height: 76px; resize: none; }
+  .full { grid-column: 1 / -1; }
+  .upload { display: flex; align-items: center; gap: 10px; }
+  .upload span { color: #57606a; font-size: 13px; }
+</style>
+<header>Northwind Labs · Careers</header>
+<main>
+  <h1>Senior Product Manager</h1>
+  <div class="meta">Bengaluru · Full-time · Payments platform. We're building the payments layer for India's next 100 million online merchants.</div>
+  <form class="grid" onsubmit="return false">
+    <div><label for="fn">First name</label><input id="fn" name="first_name"></div>
+    <div><label for="ln">Last name</label><input id="ln" name="last_name"></div>
+    <div><label for="em">Email</label><input id="em" type="email" name="email"></div>
+    <div><label for="ph">Phone</label><input id="ph" type="tel" name="phone"></div>
+    <div><label for="li">LinkedIn profile</label><input id="li" type="url" name="linkedin"></div>
+    <div><label for="loc">Current city</label><input id="loc"></div>
+    <div><label for="deg">Highest qualification</label>
+      <select id="deg"><option>Select…</option><option>B.Tech</option><option>MBA</option><option>M.Tech</option></select></div>
+    <div><label for="yrs">Years of experience</label><input id="yrs"></div>
+    <div><label for="prev">Current / last company</label><input id="prev"></div>
+    <div><label for="notice">Notice period</label><input id="notice"></div>
+    <div class="full"><label for="why">Why Northwind?</label><textarea id="why"></textarea></div>
+    <div class="full"><label>Resume / CV</label><div class="upload"><input type="file" name="resume" style="width:auto"><span>PDF, up to 5 MB</span></div></div>
+  </form>
+</main>

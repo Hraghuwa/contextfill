@@ -76,7 +76,7 @@ const readLlm = () => ({
   provider: $('#provider').value,
   keys: { groq: $('#groqKey').value.trim(), claude: $('#claudeKey').value.trim() },
   models: { groq: $('#groqModel').value.trim(), claude: $('#claudeModel').value.trim(), ollama: $('#ollamaModel').value },
-  ollamaUrl: $('#ollamaUrl').value.trim(),
+  ollamaUrl: normalizeOllamaUrl($('#ollamaUrl').value.trim()),
 });
 
 chrome.storage.local.get(null).then(settings => {
@@ -135,6 +135,9 @@ $('#save').onclick = async () => {
     answers = JSON.parse($('#answers').value || '{}');
   } catch {
     return status('Saved answers is not valid JSON.');
+  }
+  if ($('#provider').value === 'ollama' && !normalizeOllamaUrl($('#ollamaUrl').value.trim())) {
+    return status('Ollama must use a local HTTP address such as http://localhost:11434.');
   }
   const profile = Object.fromEntries(PROFILE_FIELDS.map(([k]) => [k, $(`#${k}`).value.trim()]));
   for (const [name, box] of Object.entries(lists)) profile[name] = box.get();

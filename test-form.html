@@ -82,7 +82,7 @@ if (location.hash === '#selftest') (async () => {
   assert(by('LinkedIn profile').hint === 'linkedin li', 'hint from name/id');
   assert(by('Country').options.join() === 'Select…,India,United States', 'select options');
   assert(by('Will you require visa sponsorship?').options.join() === 'Yes,No', 'radio group via legend');
-  assert(page.title === 'ContextFill test form' && page.text.includes('payments'), 'page context');
+  assert(page.title === 'ContextFill test form' && !('text' in page), 'page metadata excludes arbitrary transcript text');
 
   let submitted = false;
   document.forms[0].onsubmit = () => { submitted = true; return false; };

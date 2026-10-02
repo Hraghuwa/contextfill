@@ -81,7 +81,8 @@ window.__cf ??= (() => {
         ...(el.required && { required: true }),
       });
     }
-    return { docId, fields, page: { url: location.href, title: document.title, text: clean(document.body?.innerText, 4000) } };
+    // Field metadata is sufficient for mapping. Do not forward an arbitrary page transcript to the model.
+    return { docId, fields, page: { url: location.href, title: document.title } };
   }
 
   function setValue(t, v, blur = true) {

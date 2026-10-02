@@ -143,6 +143,8 @@ def main():
             opt.locator('#experience fieldset').nth(1).locator('[data-key="location"]').fill('Indore, MP')
         opt.fill('#email', 'asha.verma@example.com')
         opt.fill('#altEmail', 'asha.verma@students.example.edu')
+        opt.fill('#firstName', 'Asha')
+        opt.fill('#linkedin', 'linkedin.com/in/asha-verma')
         opt.fill('#city', 'Bengaluru')
         opt.fill('#needsSponsorship', 'No')
         opt.fill('#country', 'India')
@@ -167,6 +169,27 @@ def main():
         assert body['output_config']['format'] == {'type': 'json_schema', 'schema': schema} and body['system'] == 'sys'
         opt.evaluate("s => callLLM({ provider: 'claude', key: 'k', model: 'claude-sonnet-5' }, 'sys', 'hi', s)", schema)
         assert 'fallbacks' not in claude_requests[-1][1] and 'anthropic-beta' not in claude_requests[-1][0], 'no fallback for non-Opus models'
+        assert opt.evaluate("""() => normalizeOllamaUrl('http://localhost:11434')""") == 'http://localhost:11434'
+        assert not opt.evaluate("""() => normalizeOllamaUrl('https://example.test')"""), 'Ollama rejects non-loopback endpoints'
+        sensitive = opt.evaluate("""() => ruleFill([{
+            id: 'sensitive', type: 'text', label: 'National ID', hint: '', context: '', current: ''
+          }], {}, null)[0]""")
+        assert sensitive == [{'id': 'sensitive', 'action': 'ask', 'source': 'none', 'value': '',
+                              'question': 'For your security, enter this value yourself on the website.'}], sensitive
+        normalized = opt.evaluate("""async () => {
+          const original = callLLM;
+          callLLM = async () => ({ company: '', role: '', items: [
+            { id: 'field', action: 'fill', source: 'savedAnswer', value: 'first', question: '' },
+            { id: 'field', action: 'fill', source: 'savedAnswer', value: 'second', question: '' },
+            { id: 'unknown', action: 'fill', source: 'savedAnswer', value: 'third', question: '' },
+          ] });
+          try {
+            return await mapFields({ profile: {}, answers: {}, page: {}, fields: [
+              { id: 'field', type: 'text', label: 'Custom question', hint: '', context: '', current: '' }
+            ] }, { provider: 'groq', key: 'test' });
+          } finally { callLLM = original; }
+        }""")
+        assert normalized['items'] == [{'id': 'field', 'action': 'fill', 'source': 'savedAnswer', 'value': 'first', 'question': ''}], normalized
         models = ollama_up()
         if models:
             opt.select_option('#provider', 'ollama')
